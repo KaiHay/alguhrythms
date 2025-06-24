@@ -1,7 +1,31 @@
 'use client'
 import { use, useEffect, useState } from "react";
 import { radixSort, type fullRadMoves, type radLogs } from "./_components/radix";
-import {motion} from "motion/react"
+import { motion, AnimatePresence } from "framer-motion";
+
+function ArrayDisplay({ array, keyProp, currNumber }: { array: string[], keyProp: string, currNumber: string }) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={keyProp}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-row justify-center gap-2"
+      >
+        {array.map((num, idx) => (
+          <div
+            key={num + '-' + idx}
+            className={`rounded px-2 ${num === currNumber ? 'bg-yellow-300 border-2 border-yellow-500' : 'bg-green-200'}`}
+          >
+            {num}
+          </div>
+        ))}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 export default function Home() {
   const [masterArr, setMaster] = useState([''])
@@ -9,7 +33,7 @@ export default function Home() {
   const [currDigit, setDigit] = useState(0)
   const [currNumber, setCurrNumber] = useState('')
   const [stepC, setStep] = useState(0)
-  const fullMoveList = radixSort(['3', '1', '100000', '50'])
+  const fullMoveList = radixSort(['3', '1', '10', '50', '9', '8', '11', '13'])
   useEffect(() => {
     if (!fullMoveList.moves[stepC]) {
       return
@@ -27,36 +51,43 @@ export default function Home() {
       return b
     })
   }
+
   return (
-    <div className="flex justify-center flex-col text-center">
-      <div className="flex flex-row justify-center">
-        {masterArr.map((val, idx) => {
-          return (
-            <div key={idx} className="p-1">
-              {masterArr[idx] !== undefined && buckets.some(bucket => bucket.includes(masterArr[idx]!)) ? '_' : masterArr[idx] ?? ''}
-            </div>
-          )
-        })}
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <motion.div animate={{opacity: 1}}className="font-black text-green-500">{!fullMoveList.moves[stepC]?'Fully Sorted!':''}</motion.div>
+      <ArrayDisplay array={masterArr} keyProp={masterArr.join('-')} currNumber={currNumber} />
       <div className="">
-        <motion.div style={{originX:1}} className="flex fixed bottom-10 w-full justify-evenly  mt-8">
-          {buckets.map((val, idx) => {
-            return (
-              <div className='' key={idx}>
-                <div className="">
-                  <div className={`${buckets[idx]!.length === 0 ? 'opacity-0' : ''}`}>
-                    {buckets[idx]!.length === 0 ? 'd' : buckets[idx]!.join(' ')}
-                  </div>
-                  <div className=" border border-t-transparent w-10">{idx}</div>
+        {/* Render buckets */}
+        <div className="fixed bottom-10 left-0 w-full flex flex-row justify-evenly bg-white">
+          <AnimatePresence>
+            {buckets.map((bucket, idx) => (
+              <div key={idx} className="flex flex-col items-center">
+                <div className="flex flex-row gap-1 min-h-8">
+                  <AnimatePresence>
+                    {bucket.map((num, i) => (
+                      <motion.div
+                        key={num + '-' + i}
+                        layout
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-blue-200 rounded px-2"
+                      >
+                        {num}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
+                <div className="border border-t-transparent w-10 text-center">{idx}</div>
               </div>
-            )
-          })}
-        </motion.div>
-      </div>
-      <div className="">{currDigit}</div>
-      <div className="">{currNumber}</div>
-      <button className='border bg-amber-500' onClick={() => incrementStep()}>poopy</button>
-    </div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div >
+      <div className="">Sorting on digit: {currDigit}</div>
+      <div className="">Placing number: {currNumber}</div>
+      <button className='mt-3 p-0.5 rounded-md bg-amber-500' onClick={() => incrementStep()}>Next</button>
+    </div >
   );
 }
