@@ -62,7 +62,7 @@ export default function Home() {
           <AnimatePresence>
             {buckets.map((bucket, idx) => (
               <div key={idx} className="flex flex-col items-center">
-                <div className="flex flex-row gap-1 min-h-8">
+                <div className="flex flex-col-reverse gap-1 min-h-8">
                   <AnimatePresence>
                     {bucket.map((num, i) => (
                       <motion.div
