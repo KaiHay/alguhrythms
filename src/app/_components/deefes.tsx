@@ -1,11 +1,12 @@
-
 export class TreeNode {
     public data: number
+    public weight: number
     public left: TreeNode | null
     public right: TreeNode | null
 
-    constructor(data: number) {
+    constructor(data: number, weight: number) {
         this.data = data
+        this.weight = weight
         this.left = null
         this.right = null
     }
@@ -21,15 +22,6 @@ export class SearchTree {
 
 
 
-const root = new TreeNode(4)
-const left = new TreeNode(1)
-const right = new TreeNode(5)
-const right2 = new TreeNode(10)
-root.left = left
-root.right = right
-right.right = right2
-const Tree = new SearchTree(root)
-
 const printFS = (curr: TreeNode) => {
     console.log(curr.data);
 
@@ -38,24 +30,45 @@ const printFS = (curr: TreeNode) => {
 
 }
 const dfs = (curr: TreeNode, goal: number, depth: number) => {
-    if(curr.data===goal) return depth
+    if (curr.data === goal) return depth
     let found = -1
     if (curr.left) {
-        found=dfs(curr.left, goal, depth+1)
-        if(found>=0) return found
+        found = dfs(curr.left, goal, depth + 1)
+        if (found >= 0) return found
     }
     if (curr.right) {
-        found=dfs(curr.right, goal, depth+1)
-        if(found>=0) return found
+        found = dfs(curr.right, goal, depth + 1)
+        if (found >= 0) return found
     }
 
     return -1
-
-
-
-
-
 }
-console.log(dfs(Tree.root!, 10, 0));
+
+
+const root = new TreeNode(4, 0)
+const left = new TreeNode(1, 1)
+const right = new TreeNode(5, 3)
+const right2 = new TreeNode(10, 2)
+const left2 = new TreeNode(0, 1)
+const left3 = new TreeNode(2, 1)
+const right3 = new TreeNode(7, 1)
+const right4 = new TreeNode(12, 1)
+const left4 = new TreeNode(6, 1)
+
+root.left = left
+root.right = right
+right.right = right2
+left.left = left2
+left.right = left3
+right.left = right3
+right2.right = right4
+right3.left = left4
+
+const Tree = new SearchTree(root)
+
+
+const bfs = (curr: TreeNode, goal: number, depth: number) => {
+}
+console.log(dfs(Tree.root!, 12, 0));
 
 printFS(Tree.root!)
