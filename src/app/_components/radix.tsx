@@ -28,8 +28,8 @@ export function radixSort(arr: string[]): fullRadMoves {
 
     for (let c_digit = maxLen - 1; c_digit >= 0; c_digit--) {
         // Clear buckets each pass
-        for (let i = 0; i < unSorted.length; i++) {
-            const str = unSorted[i]!
+        for (const i of unSorted) {
+            const str = i
             const padded = str.padStart(maxLen, '0')
             const char = padded[c_digit]
 
@@ -76,6 +76,6 @@ const sarry = ['3', '1', '10', '50']
 const darry = ['3', '1', '2', '4', '5', '6', '7', '8', '9', '668', '234']
 const parry = ['-22', '1', '33', '4', '11111111111111111111111111111111111']
 const words = ['a', 'b', 'a', '2', 'cad', 'qwpejpoj', 'asdsa;sldk']
-let poop = radixSort(sarry)
+const poop = radixSort(sarry)
 
 console.log('sorted: ', poop)

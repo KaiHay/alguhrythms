@@ -2,8 +2,8 @@ import * as fs from 'fs';
 const file = fs.readFileSync('src/app/_components/input.txt', 'utf8');
 const hi = file.split('\n')
 const group = []
-for (let i = 0; i < hi.length; i++) {
-    const units = hi[i]!.split(/\s+/)
+for (const i of hi) {
+    const units = i.split(/\s+/)
     group.push(units)
 }
 let right=0

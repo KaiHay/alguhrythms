@@ -16,7 +16,7 @@ export class TreeNode {
 export class SearchTree {
     public root: TreeNode | null
     constructor(root?: TreeNode) {
-        this.root = root || null
+        this.root = root ?? null
     }
 }
 
@@ -67,8 +67,7 @@ right3.left = left4
 const Tree = new SearchTree(root)
 
 
-const bfs = (curr: TreeNode, goal: number, depth: number) => {
-}
+
 console.log(dfs(Tree.root!, 12, 0));
 
 printFS(Tree.root!)

@@ -1,6 +1,6 @@
 'use client'
-import { use, useEffect, useState } from "react";
-import { radixSort, type fullRadMoves, type radLogs } from "../_components/radix";
+import { useEffect, useState } from "react";
+import { radixSort } from "../_components/radix";
 import { motion, AnimatePresence } from "framer-motion";
 
 function ArrayDisplay({ array, keyProp, currNumber }: { array: string[], keyProp: string, currNumber: string }) {
@@ -38,10 +38,10 @@ export default function Home() {
     if (!fullMoveList.moves[stepC]) {
       return
     }
-    setMaster(fullMoveList.moves[stepC]!.masterArray)
-    setBuckets(fullMoveList.moves[stepC]!.buckets)
-    setDigit(fullMoveList.moves[stepC]!.currDigit)
-    setCurrNumber(fullMoveList.moves[stepC]!.currNumber)
+    setMaster(fullMoveList.moves[stepC].masterArray)
+    setBuckets(fullMoveList.moves[stepC].buckets)
+    setDigit(fullMoveList.moves[stepC].currDigit)
+    setCurrNumber(fullMoveList.moves[stepC].currNumber)
   }, [stepC])
 
   const incrementStep = () => {

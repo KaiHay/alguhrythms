@@ -21,5 +21,5 @@ const noAniSelect = (arr: number[]): number[] => {
 };
 
 const sortThis = [5, 3, 1, 2, 3, 9, 6]
-let poopy = noAniSelect(sortThis)
+const poopy = noAniSelect(sortThis)
 console.log('Sorting: ', sortThis, '  Into this: ', poopy)

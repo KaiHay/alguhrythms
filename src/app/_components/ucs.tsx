@@ -13,7 +13,7 @@ export class GraphNode {
 export class SearchTree {
     public root: GraphNode | null
     constructor(root?: GraphNode) {
-        this.root = root || null
+        this.root = root ?? null
     }
 }
 

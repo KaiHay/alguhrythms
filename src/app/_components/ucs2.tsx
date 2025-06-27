@@ -1,4 +1,12 @@
-
+//full graph, current node, frontier nodes, full frontier queue
+//every visited node
+//
+export type graphHistory = {
+    fullGraph: GraphNode2
+    currNode: GraphNode2 | null
+    frontier: PrioQ[]
+    complete: boolean
+}[]
 export class GraphNode2 {
     public data: string
     public neighbors: { node: GraphNode2, weight: number }[]
@@ -9,7 +17,7 @@ export class GraphNode2 {
     }
 }
 
-type PrioQ = {
+export type PrioQ = {
     node: GraphNode2
     currCost: number
     path: GraphNode2[]
@@ -17,17 +25,37 @@ type PrioQ = {
 
 
 export function UniCS2(graph: GraphNode2, goal: string)
-    : { path: GraphNode2[], cost: number } | null {
+    : graphHistory | null {
+    // { path: GraphNode2[], cost: number } | null {
     //how to keep track of cheapest path
+
     const bestCost = new Map<GraphNode2, number>([[graph, 0]])
     const frontier: PrioQ[] = [{ node: graph, currCost: 0, path: [graph] }]
-
+    const fullHistory: graphHistory = [{
+        fullGraph: graph,
+        currNode: graph,
+        frontier: [...frontier],
+        complete: false
+    }]
     while (frontier.length > 0) {
         frontier.sort((a, b) => a.currCost - b.currCost)
-        const nodeExp = frontier.shift!()
+        const nodeExp = frontier.shift()
         if (nodeExp?.node.data == goal) {
-            return {path: nodeExp.path, cost:nodeExp.currCost}
+            fullHistory.push({
+                fullGraph: graph,
+                currNode: nodeExp.node,
+                frontier: frontier,
+                complete: true,
+            })
+            return fullHistory
+            // return {path: nodeExp.path, cost:nodeExp.currCost}
         }
+        fullHistory.push({
+            fullGraph: graph,
+            currNode: nodeExp!.node,
+            frontier: [...frontier],
+            complete: false,
+        })
         //push neighbors to frontier, have to do some checks
         //if in, check if currCost less, replace in map(can leave in queiue? cuz most exp at end)
         //might be best to take it out the queue
@@ -41,6 +69,12 @@ export function UniCS2(graph: GraphNode2, goal: string)
                     path: [...nodeExp!.path, neighb]
                 }
                 frontier.push(frontItem)
+                fullHistory.push({
+                    fullGraph: graph,
+                    currNode: nodeExp!.node,
+                    frontier: [...frontier],
+                    complete: false,
+                })
             }
         }
     }
@@ -71,6 +105,6 @@ c.neighbors.push({ node: last, weight: 10 })
 d.neighbors.push({ node: last, weight: 1 })
 e.neighbors.push({ node: last, weight: 10 })
 
-const res = UniCS2(a,'d')
+const res = UniCS2(a, 'd')
 
-console.log((res))
+//console.log((res))
