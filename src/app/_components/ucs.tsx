@@ -1,6 +1,8 @@
 export class GraphNode {
     public data: string
     public neighbors: { node: GraphNode, weight: number }[]
+    public xCoords: number | null | undefined
+    public yCoords: number | null | undefined
 
     constructor(data: string) {
         this.data = data
@@ -40,7 +42,7 @@ export function ucs(
     start: GraphNode,
     goalKey: string
 ): { path: string[]; cost: number } | null {
-    // frontier as a simple array priority-queue 
+    // frontier array priority-queue 
     const frontier: PQItem[] = [{ node: start, cost: 0, path: [start] }]
 
     // best curr cost to each visited node
