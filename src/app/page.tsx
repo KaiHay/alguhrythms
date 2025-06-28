@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { GraphNode2, UniCS2, type PrioQ } from "./_components/ucs2"
+import { GraphNode2, UniCS2, type PrioQ, type graphHistory } from "./_components/ucs2"
 import type { LinkObject, NodeObject } from 'react-force-graph-2d'
 
 // Dynamically import ForceGraph2D to avoid SSR issues
@@ -66,15 +66,15 @@ const LINK_COLOUR = (link: LinkObject, currentPath: GraphNode2[], frontier: Prio
 }
 
 // Function to get current path from frontier
-const getCurrentPath = (currNode: GraphNode2 | null, frontier: PrioQ[], step: number, result: any): GraphNode2[] => {
-    if (!currNode || step === 0) return []
+const getCurrentPath = (currNode: GraphNode2 | null, frontier: PrioQ[], step: number, result: graphHistory | null): GraphNode2[] => {
+    if (!currNode || step === 0 || !result) return []
 
     console.log('Current node:', currNode.data)
     console.log('Current step:', step)
 
     // The current node was just expanded, so we need to look at the previous step's frontier
     const previousStep = step - 1
-    const previousFrontier = result[previousStep]?.frontier || []
+    const previousFrontier = result[previousStep]?.frontier ?? []
 
     console.log('Previous frontier items:', previousFrontier.map((f: PrioQ) => ({
         node: f.node.data,
@@ -105,21 +105,60 @@ const h = new GraphNode2('h')
 const i = new GraphNode2('i')
 const j = new GraphNode2('j')
 const k = new GraphNode2('k')
+const l = new GraphNode2('l')
+const m = new GraphNode2('m')
+const n = new GraphNode2('n')
+const o = new GraphNode2('o')
+const p = new GraphNode2('p')
+const q = new GraphNode2('q')
+const r = new GraphNode2('r')
+const s = new GraphNode2('s')
+const t = new GraphNode2('t')
+const u = new GraphNode2('u')
 
+// Tree-like structure starting from root 'a'
+// Level 1: direct children of 'a'
 a.neighbors.push({ node: b, weight: 2 })
 a.neighbors.push({ node: c, weight: 3 })
+a.neighbors.push({ node: l, weight: 5 })
 
+// Level 2: children of 'b'
 b.neighbors.push({ node: d, weight: 4 })
 b.neighbors.push({ node: e, weight: 1 })
+b.neighbors.push({ node: m, weight: 6 })
 
-c.neighbors.push({ node: e, weight: 2 })
+// Level 2: children of 'c'
+c.neighbors.push({ node: f, weight: 2 })
+c.neighbors.push({ node: g, weight: 3 })
+c.neighbors.push({ node: n, weight: 4 })
 
-e.neighbors.push({ node: f, weight: 2 })
-f.neighbors.push({ node: g, weight: 2 })
-i.neighbors.push({ node: h, weight: 2 })
-c.neighbors.push({ node: i, weight: 2 })
-i.neighbors.push({ node: j, weight: 10 })
-i.neighbors.push({ node: k, weight: 7 })
+// Level 2: children of 'l'
+l.neighbors.push({ node: o, weight: 2 })
+l.neighbors.push({ node: p, weight: 3 })
+
+// Level 3: children of 'd'
+d.neighbors.push({ node: h, weight: 5 })
+d.neighbors.push({ node: i, weight: 2 })
+
+// Level 3: children of 'e'
+e.neighbors.push({ node: j, weight: 3 })
+e.neighbors.push({ node: k, weight: 7 })
+
+// Level 3: children of 'f'
+f.neighbors.push({ node: q, weight: 4 })
+
+// Level 3: children of 'g'
+g.neighbors.push({ node: r, weight: 2 })
+
+// Level 3: children of 'm'
+m.neighbors.push({ node: s, weight: 3 })
+
+// Level 3: children of 'n'
+n.neighbors.push({ node: t, weight: 5 })
+
+// Level 3: children of 'o'
+o.neighbors.push({ node: u, weight: 1 })
+
 const result = UniCS2(a, 'k')
 
 const data = toGraph(result![0]!.fullGraph)
@@ -169,38 +208,72 @@ export default function GraphView() {
 
     return (
         <div className="">
-            <div className="mb-4 p-4 bg-gray-100 rounded flex justify-center text-center items-center flex-col">
-                <div className="mb-2">Step: {step + 1} / {result!.length}</div>
-                <div className="mb-2">Current Node: {currNode?.data ?? 'None'}</div>
-                <div className="mb-2">Destination: k</div>
-                <div className="mb-2">
-                    <div className="font-semibold w-full">Priority Queue (Frontier):</div>
-                    <div className="ml-2 flex flex-row gap-2">
-                        {frontier.length > 0 ? (
-                            frontier.map((item, index) => (
-                                <div key={index} className="text-sm">
-                                    {item.node.data} (cost: {item.currCost})
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-sm text-gray-500">Empty</div>
-                        )}
+            <div className="mb-4 p-4 bg-gray-100 rounded">
+                <div className="grid grid-cols-3 gap-6">
+                    {/* Controls Column */}
+                    <div className="flex flex-col justify-center text-center items-center">
+                        <div className="mb-2">Step: {step + 1} / {result!.length}</div>
+                        <div className="mb-2">Current Node: {currNode?.data ?? 'None'}</div>
+                        <div className="mb-2">Destination: k</div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={next}
+                                disabled={step >= result!.length - 1}
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                Next Step
+                            </button>
+                            <button
+                                onClick={reset}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            >
+                                Reset
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={next}
-                        disabled={step >= result!.length - 1}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                        Next Step
-                    </button>
-                    <button
-                        onClick={reset}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
-                        Reset
-                    </button>
+
+                    {/* Priority Queue Column */}
+                    <div className="flex flex-col">
+                        <div className="font-semibold mb-2">Priority Queue (Frontier):</div>
+                        <div className="flex flex-wrap gap-1">
+                            {frontier.length > 0 ? (
+                                frontier.map((item, index) => (
+                                    <div key={index} className="text-sm bg-white px-2 py-1 rounded border">
+                                        {item.node.data} ({item.currCost})
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-sm text-gray-500">Empty</div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Color Legend Column */}
+                    <div className="flex flex-col">
+                        <div className="font-semibold mb-2">Color Legend</div>
+                        <div className="space-y-1 text-xs">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span>Current Node</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-green-700 rounded-full"></div>
+                                <span>Current Path</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                                <span>Frontier</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                                <span>Other</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                                <span>Particles on current path</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div style={{ width: '100%', height: '600px' }}>
@@ -229,12 +302,12 @@ export default function GraphView() {
 
                         for (let i = 0; i < expandedNodePath.length - 1; i++) {
                             if (expandedNodePath[i]?.data === sourceId && expandedNodePath[i + 1]?.data === targetId) {
-                                return 0.03 / (l as any).weight // Set speed based on weight for current path
+                                return 0.03 / ((l as LinkObject & { weight: number }).weight) // Set speed based on weight for current path
                             }
                         }
                         return 0 // No speed for other edges
                     }}
-                    linkLabel={l => `w=${(l).weight}`}
+                    linkLabel={(l: LinkObject) => `w=${(l as LinkObject & { weight: number }).weight}`}
 
                     nodeCanvasObject={(node, ctx, globalScale) => {
                         const label = node.id as string
@@ -247,8 +320,8 @@ export default function GraphView() {
                     }}
 
                     linkCanvasObjectMode={() => 'after'}
-                    linkCanvasObject={(link, ctx, globalScale) => {
-                        const weight = (link).weight
+                    linkCanvasObject={(link: LinkObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
+                        const weight = (link as LinkObject & { weight: number }).weight
                         const label = String(weight)
 
                         const sx = (link.source as NodeObject).x!;
