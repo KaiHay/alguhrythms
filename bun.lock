@@ -19,6 +19,7 @@
         "react-dom": "^19.0.0",
         "react-force-graph": "^1.47.7",
         "react-force-graph-2d": "^1.27.1",
+        "react-force-graph-3d": "^1.27.0",
         "react-force-graph-labeled-links": "^1.0.5",
         "server-only": "^0.0.1",
         "superjson": "^2.2.1",
@@ -1157,6 +1158,8 @@
     "react-force-graph": ["react-force-graph@1.47.7", "", { "dependencies": { "3d-force-graph": "^1.76", "3d-force-graph-ar": "^1.9", "3d-force-graph-vr": "^3.0", "force-graph": "^1.49", "prop-types": "15", "react-kapsule": "^2.5" }, "peerDependencies": { "react": "*" } }, "sha512-yvbdvOiAwTN6G/yvItjdN1Ka/KXujJh3T3wJVHWJuFig5f3o3IoX2tQEO6qoLdqERI/v9w1ZXm33IRQ+UXmr8w=="],
 
     "react-force-graph-2d": ["react-force-graph-2d@1.27.1", "", { "dependencies": { "force-graph": "^1.49", "prop-types": "15", "react-kapsule": "^2.5" }, "peerDependencies": { "react": "*" } }, "sha512-/b1k+HbW9QCzGILJibyzN2PVZdDWTFuEylqcJGkUTBs0uLcK0h2LgOUuVU+GpRGpuXmj9sBAt43zz+PTETFHGg=="],
+
+    "react-force-graph-3d": ["react-force-graph-3d@1.27.0", "", { "dependencies": { "3d-force-graph": "^1.76", "prop-types": "15", "react-kapsule": "^2.5" }, "peerDependencies": { "react": "*" } }, "sha512-Int5kfojfkvXPOdaaROIuoMAqt0Lds5O/zq9rnvuVg90GU6WYCmLXiybH9YvgIwmMZhFR6wzEERXoU/ydaSfmQ=="],
 
     "react-force-graph-labeled-links": ["react-force-graph-labeled-links@1.0.5", "", { "dependencies": { "3d-force-graph": "^1.41.1", "3d-force-graph-vr": "1.20.0", "force-graph-labeled-links": "^1.0.6", "kapsule": "^1.9.2", "prop-types": "^15.6.2", "react-kapsule": "^1.4.1" }, "peerDependencies": { "react": "*" } }, "sha512-9FXWeSJsthJ8BmNNInGCaISPPtxO4/oH/xL+kXZcueHBACtH1J1RSAwqU/S8T7QcfO2oHC+Is242+jF9rELZAg=="],
 

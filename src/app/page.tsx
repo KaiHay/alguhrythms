@@ -1,7 +1,15 @@
 'use client'
 import { useEffect, useState } from 'react'
-import ForceGraph2D, { type LinkObject, type NodeObject } from 'react-force-graph-2d'
-import { GraphNode2, UniCS2 } from "./_components/ucs2"
+import dynamic from 'next/dynamic'
+import { GraphNode2, UniCS2, type PrioQ, type graphHistory } from "./_components/ucs2"
+import type { LinkObject, NodeObject } from 'react-force-graph-2d'
+
+// Dynamically import ForceGraph2D to avoid SSR issues
+const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
+    ssr: false,
+    loading: () => <div className="flex items-center justify-center h-96">Loading graph...</div>
+})
+
 //RENDER THE GRAPH ON THE SCREEN
 function toGraph(root: GraphNode2) {
     const nodes: { id: string }[] = []
@@ -21,10 +29,69 @@ function toGraph(root: GraphNode2) {
     return { nodes, links }
 }
 
-const NODE_COLOUR = (n: NodeObject, currentId: string | null, frontierIds: string[]) => {
+const NODE_COLOUR = (n: NodeObject, currentId: string | null, frontierIds: string[], pathIds: string[]) => {
     if (n.id === currentId) return '#ef4444' // red for current node
+    if (pathIds.includes(n.id as string)) return '#006400' // green for nodes in current path
     if (frontierIds.includes(n.id as string)) return '#fbbf24' // yellow for frontier nodes
     return '#94a3b8' // gray for other nodes
+}
+
+const LINK_COLOUR = (link: LinkObject, currentPath: GraphNode2[], frontier: PrioQ[]) => {
+    const sourceId = (link.source as NodeObject)?.id as string
+    const targetId = (link.target as NodeObject)?.id as string
+
+    if (!sourceId || !targetId) return '#94a3b8'
+
+    // Check if this link is part of the current path (highest priority)
+    for (let i = 0; i < currentPath.length - 1; i++) {
+        if (currentPath[i]?.data === sourceId && currentPath[i + 1]?.data === targetId) {
+            console.log(`Link ${sourceId} -> ${targetId} is in path, coloring green`)
+            return '#22c55e' // green for current path
+        }
+    }
+
+    // Check if this link is part of any frontier node's path (second priority)
+    for (const frontierItem of frontier) {
+        const frontierPath = frontierItem.path
+        for (let i = 0; i < frontierPath.length - 1; i++) {
+            if (frontierPath[i]?.data === sourceId && frontierPath[i + 1]?.data === targetId) {
+                console.log(`Link ${sourceId} -> ${targetId} is in frontier path to ${frontierItem.node.data}, coloring dark yellow`)
+                return '#b8860b' // dark yellow for frontier paths
+            }
+        }
+    }
+
+    console.log(`Link ${sourceId} -> ${targetId} not special, coloring gray`)
+    return '#94a3b8' // gray for other links
+}
+
+// Function to get current path from frontier
+const getCurrentPath = (currNode: GraphNode2 | null, frontier: PrioQ[], step: number, result: graphHistory | null): GraphNode2[] => {
+    if (!currNode || step === 0 || !result) return []
+
+    console.log('Current node:', currNode.data)
+    console.log('Current step:', step)
+
+    // The current node was just expanded, so we need to look at the previous step's frontier
+    const previousStep = step - 1
+    const previousFrontier = result[previousStep]?.frontier ?? []
+
+    console.log('Previous frontier items:', previousFrontier.map((f: PrioQ) => ({
+        node: f.node.data,
+        cost: f.currCost,
+        path: f.path.map((n: GraphNode2) => n.data)
+    })))
+
+    // Find the path for the current node in the previous frontier
+    const pathItem = previousFrontier.find((item: PrioQ) => item.node.data === currNode.data)
+
+    if (pathItem) {
+        console.log(`Found path for ${currNode.data}:`, pathItem.path.map((n: GraphNode2) => n.data))
+        return pathItem.path
+    }
+
+    console.log(`No path found for ${currNode.data} in previous frontier`)
+    return []
 }
 
 const a = new GraphNode2('a')
@@ -38,21 +105,60 @@ const h = new GraphNode2('h')
 const i = new GraphNode2('i')
 const j = new GraphNode2('j')
 const k = new GraphNode2('k')
+const l = new GraphNode2('l')
+const m = new GraphNode2('m')
+const n = new GraphNode2('n')
+const o = new GraphNode2('o')
+const p = new GraphNode2('p')
+const q = new GraphNode2('q')
+const r = new GraphNode2('r')
+const s = new GraphNode2('s')
+const t = new GraphNode2('t')
+const u = new GraphNode2('u')
 
+// Tree-like structure starting from root 'a'
+// Level 1: direct children of 'a'
 a.neighbors.push({ node: b, weight: 2 })
 a.neighbors.push({ node: c, weight: 3 })
+a.neighbors.push({ node: l, weight: 5 })
 
+// Level 2: children of 'b'
 b.neighbors.push({ node: d, weight: 4 })
 b.neighbors.push({ node: e, weight: 1 })
+b.neighbors.push({ node: m, weight: 6 })
 
-c.neighbors.push({ node: e, weight: 2 })
+// Level 2: children of 'c'
+c.neighbors.push({ node: f, weight: 2 })
+c.neighbors.push({ node: g, weight: 3 })
+c.neighbors.push({ node: n, weight: 4 })
 
-e.neighbors.push({ node: f, weight: 2 })
-f.neighbors.push({ node: g, weight: 2 })
-i.neighbors.push({ node: h, weight: 2 })
-c.neighbors.push({ node: i, weight: 2 })
-i.neighbors.push({ node: j, weight: 10 })
-i.neighbors.push({ node: k, weight: 7 })
+// Level 2: children of 'l'
+l.neighbors.push({ node: o, weight: 2 })
+l.neighbors.push({ node: p, weight: 3 })
+
+// Level 3: children of 'd'
+d.neighbors.push({ node: h, weight: 5 })
+d.neighbors.push({ node: i, weight: 2 })
+
+// Level 3: children of 'e'
+e.neighbors.push({ node: j, weight: 3 })
+e.neighbors.push({ node: k, weight: 7 })
+
+// Level 3: children of 'f'
+f.neighbors.push({ node: q, weight: 4 })
+
+// Level 3: children of 'g'
+g.neighbors.push({ node: r, weight: 2 })
+
+// Level 3: children of 'm'
+m.neighbors.push({ node: s, weight: 3 })
+
+// Level 3: children of 'n'
+n.neighbors.push({ node: t, weight: 5 })
+
+// Level 3: children of 'o'
+o.neighbors.push({ node: u, weight: 1 })
+
 const result = UniCS2(a, 'k')
 
 const data = toGraph(result![0]!.fullGraph)
@@ -65,11 +171,31 @@ export default function GraphView() {
 
     // Then use it in useState
     const [currNode, setCurrNode] = useState<GraphNode2 | null>(initialCurrNode);
+    const [expandedNode, setExpandedNode] = useState<GraphNode2 | null>(initialCurrNode);
+    const [expandedNodePath, setExpandedNodePath] = useState<GraphNode2[]>([]);
     const [step, setStep] = useState(0)
     console.log(result)
     useEffect(() => {
         setCurrNode(result![step]!.currNode)
         setFrontier(result![step]!.frontier)
+
+        // Check if this is a new node being expanded (not just neighbor enqueuing)
+        if (step > 0) {
+            const prevNode = result![step - 1]!.currNode
+            const currNode = result![step]!.currNode
+
+            // If current node changed, it's a new expansion
+            if (prevNode?.data !== currNode?.data) {
+                setExpandedNode(currNode)
+                // Get the path for this newly expanded node
+                const path = getCurrentPath(currNode, result![step]!.frontier, step, result)
+                setExpandedNodePath(path)
+            }
+        } else {
+            // First step
+            setExpandedNode(result![0]!.currNode)
+            setExpandedNodePath([result![0]!.currNode!])
+        }
     }, [step])
 
     const next = () => {
@@ -82,48 +208,106 @@ export default function GraphView() {
 
     return (
         <div className="">
-            <div className="mb-4 p-4 bg-gray-100 rounded flex justify-center text-center items-center flex-col">
-                <div className="mb-2">Step: {step + 1} / {result!.length}</div>
-                <div className="mb-2">Current Node: {currNode?.data ?? 'None'}</div>
-                <div className="mb-2">
-                    <div className="font-semibold w-full">Priority Queue (Frontier):</div>
-                    <div className="ml-2 flex flex-row gap-2">
-                        {frontier.length > 0 ? (
-                            frontier.map((item, index) => (
-                                <div key={index} className="text-sm">
-                                    {item.node.data} (cost: {item.currCost})
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-sm text-gray-500">Empty</div>
-                        )}
+            <div className="mb-4 p-4 bg-gray-100 rounded">
+                <div className="grid grid-cols-3 gap-6">
+                    {/* Controls Column */}
+                    <div className="flex flex-col justify-center text-center items-center">
+                        <div className="mb-2">Step: {step + 1} / {result!.length}</div>
+                        <div className="mb-2">Current Node: {currNode?.data ?? 'None'}</div>
+                        <div className="mb-2">Destination: k</div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={next}
+                                disabled={step >= result!.length - 1}
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                Next Step
+                            </button>
+                            <button
+                                onClick={reset}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            >
+                                Reset
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={next}
-                        disabled={step >= result!.length - 1}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                        Next Step
-                    </button>
-                    <button
-                        onClick={reset}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
-                        Reset
-                    </button>
+
+                    {/* Priority Queue Column */}
+                    <div className="flex flex-col">
+                        <div className="font-semibold mb-2">Priority Queue (Frontier):</div>
+                        <div className="flex flex-wrap gap-1">
+                            {frontier.length > 0 ? (
+                                frontier.map((item, index) => (
+                                    <div key={index} className="text-sm bg-white px-2 py-1 rounded border">
+                                        {item.node.data} ({item.currCost})
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-sm text-gray-500">Empty</div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Color Legend Column */}
+                    <div className="flex flex-col">
+                        <div className="font-semibold mb-2">Color Legend</div>
+                        <div className="space-y-1 text-xs">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span>Current Node</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-green-700 rounded-full"></div>
+                                <span>Current Path</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                                <span>Frontier</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                                <span>Other</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                                <span>Particles on current path</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div style={{ width: '100%', height: '600px' }}>
                 <ForceGraph2D
                     graphData={data}
                     linkWidth={2}
-                    nodeColor={(n: NodeObject) => NODE_COLOUR(n, currNode?.data ?? null, frontier.map(f => f.node.data))}
+                    nodeColor={(n: NodeObject) => NODE_COLOUR(n, currNode?.data ?? null, frontier.map(f => f.node.data), expandedNodePath.map(n => n.data))}
+                    linkColor={(l: LinkObject) => LINK_COLOUR(l, expandedNodePath, frontier)}
                     nodeLabel="id"
-                    linkDirectionalParticles={1}
-                    linkDirectionalParticleSpeed={(l: LinkObject) => (0.03 / (l).weight)}
-                    linkLabel={l => `w=${(l).weight}`}
+                    linkDirectionalParticles={(l: LinkObject) => {
+                        // Only show particles on current path edges
+                        const sourceId = (l.source as NodeObject)?.id as string
+                        const targetId = (l.target as NodeObject)?.id as string
+
+                        for (let i = 0; i < expandedNodePath.length - 1; i++) {
+                            if (expandedNodePath[i]?.data === sourceId && expandedNodePath[i + 1]?.data === targetId) {
+                                return 1 // Show 1 particle on current path edges
+                            }
+                        }
+                        return 0 // No particles on other edges
+                    }}
+                    linkDirectionalParticleSpeed={(l: LinkObject) => {
+                        // Only set speed for current path edges
+                        const sourceId = (l.source as NodeObject)?.id as string
+                        const targetId = (l.target as NodeObject)?.id as string
+
+                        for (let i = 0; i < expandedNodePath.length - 1; i++) {
+                            if (expandedNodePath[i]?.data === sourceId && expandedNodePath[i + 1]?.data === targetId) {
+                                return 0.03 / ((l as LinkObject & { weight: number }).weight) // Set speed based on weight for current path
+                            }
+                        }
+                        return 0 // No speed for other edges
+                    }}
+                    linkLabel={(l: LinkObject) => `w=${(l as LinkObject & { weight: number }).weight}`}
 
                     nodeCanvasObject={(node, ctx, globalScale) => {
                         const label = node.id as string
@@ -131,13 +315,13 @@ export default function GraphView() {
                         ctx.font = `${fontSize}px Sans-Serif`
                         ctx.textAlign = 'center'
                         ctx.textBaseline = 'middle'
-                        ctx.fillStyle = NODE_COLOUR(node, currNode?.data ?? null, frontier.map(f => f.node.data))
+                        ctx.fillStyle = NODE_COLOUR(node, currNode?.data ?? null, frontier.map(f => f.node.data), expandedNodePath.map(n => n.data))
                         ctx.fillText(label, node.x!, node.y!)
                     }}
 
                     linkCanvasObjectMode={() => 'after'}
-                    linkCanvasObject={(link, ctx, globalScale) => {
-                        const weight = (link).weight
+                    linkCanvasObject={(link: LinkObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
+                        const weight = (link as LinkObject & { weight: number }).weight
                         const label = String(weight)
 
                         const sx = (link.source as NodeObject).x!;
@@ -147,6 +331,7 @@ export default function GraphView() {
                         const mx = (sx + tx) / 2;
                         const my = (sy + ty) / 2;
 
+                        // Only draw the weight label, let the default linkColor handle the line
                         const fontSize = 12 / globalScale;
                         ctx.font = `${fontSize}px Sans-Serif`;
                         ctx.textAlign = 'center';
